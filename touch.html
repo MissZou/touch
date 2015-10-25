@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SPA</title>
+
+    <body>
+        <div id="touch">。。。</div>
+    </body>
+    <script>
+    var touch = (function() {
+        var configMap = {
+                swipe_distance: 30,
+                swipe_time: 500
+            },
+            point_start,
+            time_start,
+            point_end,
+            $touchtitle = document.getElementById("touch"),
+            getPos = function(e) {
+                var touches = e.touches;
+                return {
+                    x: touches[0].clientX,
+                    y: touches[0].clientY
+                };
+            },
+
+            //计算两点之间的距离
+            getDist = function(p1, p2) {
+                if (!p1 || !p2) return 0;
+                return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+            },
+
+            //计算两点之间所呈的角度
+            getAngle = function(p1, p2) {
+                var r = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                var a = r * 180 / Math.PI;
+                return a;
+            },
+
+            //获取swipe方向
+            getSwipeDirection = function(p1, p2) {
+                var angle = getAngle(p1, p2);
+                if (angle < 45 && angle > -45) return "right";
+                if (angle >= 45 && angle < 135) return "bottom";
+                if (angle >= 135 || angle < -135) return "left";
+                if (angle >= -135 && angle <= -45) return "top";
+            },
+
+            //记录touchstart开始时间和位置
+            touchstart = function(e) {
+                point_start = getPos(e);
+                time_start = Date.now();
+            },
+            touchmove = function(e) {
+                point_end = getPos(e);
+                e.preventDefault(); //在touchmove中需要阻止默认事件
+            },
+            touchend = function(e) {
+                var time_end = Date.now();
+
+                if (getDist(point_start, point_end) > configMap.swipe_distance && time_end - time_start < configMap.swipe_time) {
+                    var dir = getSwipeDirection(point_start, point_end);
+
+                    $touchtitle.innerHTML = 'swipe' + dir;
+                }
+            },
+            initModule = function() {
+                document.addEventListener("touchstart", touchstart);
+                document.addEventListener("touchmove", touchmove);
+                document.addEventListener("touchend", touchend);
+            };
+
+        return {
+            initModule: initModule
+        }
+    })();
+
+    function load() {
+        alert("load")
+        touch.initModule();
+    }
+    window.onload = load;
+    </script>
+</head>
+</html>
